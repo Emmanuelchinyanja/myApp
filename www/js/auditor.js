@@ -18,9 +18,20 @@ $(window).on('load', function() {
         return;
     }
     
-    initializeData();
-    loadAuditorDashboard();
+    waitForDataReady(function() {
+        initializeData();
+        loadAuditorDashboard();
+    });
 });
+
+// Wait until dbReady flag or localStorage has orders/products
+function waitForDataReady(cb, attempts = 0) {
+    if (window.dbReady || localStorage.getItem('orders') !== null || localStorage.getItem('products') !== null || attempts > 30) {
+        cb();
+    } else {
+        setTimeout(() => waitForDataReady(cb, attempts + 1), 200);
+    }
+}
 
 // Initialize Data
 function initializeData() {

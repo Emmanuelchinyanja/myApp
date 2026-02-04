@@ -19,12 +19,24 @@ $(window).on('load', function() {
         return;
     }
     
-    initializeData();
-    loadManagerDashboard();
-    
-    // Refresh data every 3 seconds to see real-time updates
-    setInterval(refreshDataFromStorage, 3000);
+    // Wait for DB/localStorage to be ready, then initialize
+    waitForDataReady(function() {
+        initializeData();
+        loadManagerDashboard();
+
+        // Refresh data every 3 seconds to see real-time updates (products + orders + suppliers)
+        setInterval(refreshAllFromStorage, 3000);
+    });
 });
+
+// Wait until dbReady flag or localStorage has products key
+function waitForDataReady(cb, attempts = 0) {
+    if (window.dbReady || localStorage.getItem('products') !== null || attempts > 30) {
+        cb();
+    } else {
+        setTimeout(() => waitForDataReady(cb, attempts + 1), 200);
+    }
+}
 
 // Refresh data from localStorage to see real-time updates
 function refreshDataFromStorage() {
@@ -33,6 +45,20 @@ function refreshDataFromStorage() {
         orders = JSON.parse(savedOrders);
         updateDashboardStats();
     }
+}
+
+// Refresh products, orders and suppliers from storage
+function refreshAllFromStorage() {
+    const sp = localStorage.getItem('products');
+    if (sp) products = JSON.parse(sp);
+
+    const so = localStorage.getItem('orders');
+    if (so) orders = JSON.parse(so);
+
+    const ss = localStorage.getItem('suppliers');
+    if (ss) suppliers = JSON.parse(ss);
+
+    updateDashboardStats();
 }
 
 // Initialize Data from localStorage
