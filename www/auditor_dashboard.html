@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor Dashboard - Builder's Solution</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Auditor Dashboard -->
+    <div id="auditorDashboard" class="screen active">
+        <div class="mobile-header">
+            <h2>Auditor Portal</h2>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Welcome, <span id="auditorName">Auditor</span>!</h3>
+                <p>Financial Reports & Analytics</p>
+            </div>
+            <div class="nav-cards">
+                <div class="nav-card" onclick="showSection('dailyReport')">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>Daily Report</h4>
+                    <p>Today's transactions</p>
+                </div>
+                <div class="nav-card" onclick="showSection('salesAnalytics')">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Sales Analytics</h4>
+                    <p>Performance metrics</p>
+                </div>
+                <div class="nav-card" onclick="showSection('auditTrail')">
+                    <i class="fas fa-history"></i>
+                    <h4>Audit Trail</h4>
+                    <p>Activity logs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Report Screen -->
+    <div id="dailyReport" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('auditorDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Daily Report</h2>
+        </div>
+        <div class="reports-content">
+            <div class="report-filters">
+                <div class="form-group">
+                    <label>Select Date</label>
+                    <input type="date" id="dailyReportDate">
+                </div>
+                <button class="btn btn-primary" onclick="generateDailyReport()">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </button>
+            </div>
+            <div id="dailyReportOutput" class="report-output"></div>
+        </div>
+    </div>
+
+    <!-- Sales Analytics Screen -->
+    <div id="salesAnalytics" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('auditorDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Sales Analytics</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <h4>Total Revenue</h4>
+                    <p id="totalRevenue">MWK 0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h4>Total Orders</h4>
+                    <p id="totalOrdersCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <h4>Customers</h4>
+                    <p id="totalCustomers">0</p>
+                </div>
+            </div>
+            <div class="report-output">
+                <h3>Sales Breakdown</h3>
+                <div id="analyticsChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Trail Screen -->
+    <div id="auditTrail" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('auditorDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Audit Trail</h2>
+        </div>
+        <div class="reports-content">
+            <div class="report-filters">
+                <div class="form-group">
+                    <label>Filter By</label>
+                    <select id="auditFilter">
+                        <option value="all">All Activities</option>
+                        <option value="sales">Sales</option>
+                        <option value="inventory">Inventory Changes</option>
+                        <option value="users">User Activities</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date Range</label>
+                    <input type="date" id="auditStartDate">
+                    <input type="date" id="auditEndDate">
+                </div>
+                <button class="btn btn-primary" onclick="generateAuditTrail()">
+                    <i class="fas fa-search"></i> View Audit Trail
+                </button>
+            </div>
+            <div id="auditTrailOutput" class="report-output"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- jsPDF Libraries for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Must load database initialization FIRST -->
+    <script src="js/db-ini.js"></script>
+    <!-- Then load auditor script -->
+    <script src="js/auditor.js"></script>
+</body>
+</html>

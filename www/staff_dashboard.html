@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Builder's Solution</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Staff Dashboard Home -->
+    <div id="staffDashboard" class="screen active">
+        <div class="mobile-header">
+            <h2>Staff Portal</h2>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Welcome, <span id="staffName">Staff</span>!</h3>
+                <p>Sales Staff Dashboard</p>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h4>Today's Sales</h4>
+                    <p id="todaySalesCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <h4>Total Amount</h4>
+                    <p id="todaySalesAmount">MWK 0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Verified Tokens</h4>
+                    <p id="verifiedTokens">0</p>
+                </div>
+            </div>
+
+            <div class="nav-cards">
+                <div class="nav-card" onclick="showSection('verifyToken')">
+                    <i class="fas fa-qrcode"></i>
+                    <h4>Verify Token</h4>
+                    <p>Check payment tokens</p>
+                </div>
+                <div class="nav-card" onclick="showSection('processSale')">
+                    <i class="fas fa-cash-register"></i>
+                    <h4>Process Sale</h4>
+                    <p>In-store sales</p>
+                </div>
+                <div class="nav-card" onclick="showSection('notifications')">
+                    <i class="fas fa-bell"></i>
+                    <h4>Notifications <span id="notifBadge" style="background:#e74c3c; color:#fff; padding:2px 6px; border-radius:12px; font-size:12px; margin-left:8px; display:none;">0</span></h4>
+                    <p>Online purchase alerts</p>
+                </div>
+                <div class="nav-card" onclick="showSection('stockCheck')">
+                    <i class="fas fa-boxes"></i>
+                    <h4>Stock Check</h4>
+                    <p>View inventory</p>
+                </div>
+                <div class="nav-card" onclick="showSection('salesHistory')">
+                    <i class="fas fa-history"></i>
+                    <h4>Sales History</h4>
+                    <p>My transactions</p>
+                </div>
+            </div>
+
+            <!-- Reset Button -->
+            <div style="margin-top:30px; padding-top:20px; border-top:2px solid #e5e7eb;">
+                <button class="btn btn-danger btn-block" onclick="resetAllSalesData()" style="background-color:#e74c3c; color:white; padding:12px;">
+                    <i class="fas fa-redo"></i> Reset All Figures to Zero
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Screen -->
+    <div id="notifications" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('staffDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Notifications</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Notifications</h3>
+                <p>Online orders that require verification/collection by customers.</p>
+            </div>
+            <div id="notificationsList"></div>
+        </div>
+    </div>
+
+    <!-- Verify Token Screen -->
+    <div id="verifyToken" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('staffDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Verify Payment Token</h2>
+        </div>
+        <div class="verify-content">
+            <div class="token-input-section">
+                <div class="welcome-card" style="margin-bottom:20px;">
+                    <h4><i class="fas fa-info-circle"></i> How to Verify</h4>
+                    <p style="margin-top:10px;">Ask customer for their 8-character payment token. Enter it below to view order details and release goods.</p>
+                </div>
+                <div class="form-group">
+                    <label>Enter Token Code</label>
+                    <input type="text" id="tokenInput" placeholder="ABC12345" maxlength="8" style="text-transform:uppercase; font-size:20px; font-weight:bold; letter-spacing:3px; text-align:center;">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="verifyTokenCode()">
+                    <i class="fas fa-search"></i> Verify Token
+                </button>
+            </div>
+            <div id="tokenResult" class="token-result"></div>
+        </div>
+    </div>
+
+    <!-- Process Sale Screen -->
+    <div id="processSale" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('staffDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Process Sale</h2>
+        </div>
+        <div class="sale-content">
+            <div class="sale-layout">
+                <!-- Left: Products Column -->
+                <div class="sale-products-column">
+                    <div class="search-bar" style="margin-bottom:15px;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchSaleProducts" placeholder="Search products...">
+                    </div>
+                    <div class="products-list" id="saleProductsList"></div>
+                </div>
+
+                <!-- Right: Cart Column -->
+                <div class="sale-cart-column">
+                    <div class="sale-summary">
+                        <h3 style="margin-top:0;"><i class="fas fa-shopping-cart"></i> Cart</h3>
+                        <div class="cart-container">
+                            <div id="saleItems" class="sale-items-list"></div>
+                        </div>
+                        <div class="summary-row total" style="margin-top:15px; padding-top:15px; border-top:2px solid #e5e7eb;">
+                            <span><strong>Total:</strong></span>
+                            <span id="saleTotal" style="font-weight:bold; color:var(--primary-color);">MWK 0</span>
+                        </div>
+                        <div class="form-group" style="margin-top:15px;">
+                            <label><i class="fas fa-credit-card"></i> Payment Method</label>
+                            <select id="salePaymentMethod">
+                                <option value="cash">Cash</option>
+                                <option value="mobile">Mobile Money (Airtel/TNM)</option>
+                                <option value="card">Card/POS</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Customer Name (Optional)</label>
+                            <input type="text" id="saleCustomerName" placeholder="Enter customer name">
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="completeSale()">
+                            <i class="fas fa-check-circle"></i> Complete Sale
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Check Screen -->
+    <div id="stockCheck" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('staffDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Stock Check</h2>
+        </div>
+        <div class="inventory-content">
+            <div class="filter-tabs">
+                <button class="tab active" onclick="filterStock('all')">
+                    <i class="fas fa-boxes"></i> All Items
+                </button>
+                <button class="tab" onclick="filterStock('low')">
+                    <i class="fas fa-exclamation-triangle"></i> Low Stock
+                </button>
+                <button class="tab" onclick="filterStock('out')">
+                    <i class="fas fa-times-circle"></i> Out of Stock
+                </button>
+            </div>
+            <div id="stockList" class="inventory-list"></div>
+        </div>
+    </div>
+
+    <!-- Sales History Screen -->
+    <div id="salesHistory" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('staffDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>My Sales History</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="filter-tabs">
+                <button class="tab active" onclick="filterSalesHistory('today')">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="tab" onclick="filterSalesHistory('week')">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="tab" onclick="filterSalesHistory('all')">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="salesHistoryList"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script src="js/db-ini.js"></script>
+    <script src="js/staff.js"></script>
+</body>
+</html>

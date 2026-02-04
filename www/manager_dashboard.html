@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - Builder's Solution</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Manager Dashboard Home -->
+    <div id="managerDashboard" class="screen active">
+        <div class="mobile-header">
+            <h2>Manager Portal</h2>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Welcome, <span id="managerName">Manager</span>!</h3>
+                <p>Business Dashboard & Management</p>
+            </div>
+
+            <!-- Business Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <h4>Today's Sales</h4>
+                    <p id="todaySales">MWK 0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h4>Total Orders</h4>
+                    <p id="totalOrders">0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Low Stock Items</h4>
+                    <p id="lowStock">0</p>
+                </div>
+            </div>
+
+            <div class="nav-cards">
+                <div class="nav-card" onclick="showSection('inventoryManagement')">
+                    <i class="fas fa-warehouse"></i>
+                    <h4>Inventory</h4>
+                    <p>Manage stock levels</p>
+                </div>
+                <div class="nav-card" onclick="showSection('suppliers')">
+                    <i class="fas fa-truck"></i>
+                    <h4>Suppliers</h4>
+                    <p>Contact suppliers</p>
+                </div>
+                <div class="nav-card" onclick="showSection('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>Reports</h4>
+                    <p>Sales analytics</p>
+                </div>
+                <div class="nav-card" onclick="showSection('staffPerformance')">
+                    <i class="fas fa-users"></i>
+                    <h4>Staff Performance</h4>
+                    <p>View staff sales</p>
+                </div>
+                <div class="nav-card" onclick="showSection('customerFeedback')">
+                    <i class="fas fa-comments"></i>
+                    <h4>Customer Feedback</h4>
+                    <p>Reviews & ratings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Management Screen -->
+    <div id="inventoryManagement" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('managerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Inventory Management</h2>
+            <button class="btn-add" onclick="showAddProduct()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <div class="inventory-content">
+            <div class="filter-tabs">
+                <button class="tab active" onclick="filterInventory('all')">All Products</button>
+                <button class="tab" onclick="filterInventory('low')">Low Stock</button>
+                <button class="tab" onclick="filterInventory('out')">Out of Stock</button>
+            </div>
+            <div id="inventoryList" class="inventory-list"></div>
+        </div>
+    </div>
+
+    <!-- Suppliers Screen -->
+    <div id="suppliers" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('managerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Suppliers</h2>
+            <button class="btn-add" onclick="showAddSupplier()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <div class="suppliers-content">
+            <div id="suppliersList" class="suppliers-list"></div>
+        </div>
+    </div>
+
+    <!-- Reports Screen -->
+    <div id="reports" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('managerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Sales Reports</h2>
+        </div>
+        <div class="reports-content">
+            <div class="report-filters">
+                <div class="form-group">
+                    <label>Report Type</label>
+                    <select id="reportType">
+                        <option value="daily">Daily Sales</option>
+                        <option value="weekly">Weekly Sales</option>
+                        <option value="monthly">Monthly Sales</option>
+                        <option value="inventory">Inventory Report</option>
+                        <option value="products">Product Performance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Date</label>
+                    <input type="date" id="reportDate">
+                </div>
+                <button class="btn btn-primary" onclick="generateReport()">
+                    <i class="fas fa-chart-line"></i> Generate Report
+                </button>
+            </div>
+            <div id="reportOutput" class="report-output"></div>
+        </div>
+    </div>
+
+    <!-- Staff Performance Screen -->
+    <div id="staffPerformance" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('managerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Staff Performance</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Staff Sales Performance</h3>
+                <p>Track individual staff member sales</p>
+            </div>
+            <div id="staffPerformanceList"></div>
+        </div>
+    </div>
+
+    <!-- Customer Feedback Screen -->
+    <div id="customerFeedback" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('managerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Customer Feedback</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <h4>Average Rating</h4>
+                    <p id="avgRating">0.0</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-comment"></i>
+                    <h4>Total Reviews</h4>
+                    <p id="totalReviews">0</p>
+                </div>
+            </div>
+            <div id="feedbackList"></div>
+        </div>
+    </div>
+
+    <!-- Modal for Add Product -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Product</h3>
+                <button class="btn-close" onclick="closeModal('addProductModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="productCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="cement">Cement & Sand</option>
+                        <option value="bricks">Bricks & Blocks</option>
+                        <option value="roofing">Roofing Materials</option>
+                        <option value="timber">Timber & Wood</option>
+                        <option value="paint">Paint & Finishes</option>
+                        <option value="tools">Tools & Hardware</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electrical">Electrical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (MWK)</label>
+                    <input type="number" id="productPrice" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Stock Quantity</label>
+                    <input type="number" id="productStock" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Low Stock Alert Level</label>
+                    <input type="number" id="productLowStock" value="10" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <textarea id="productDescription" rows="3" placeholder="Product details..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> Save Product
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Product -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Product</h3>
+                <button class="btn-close" onclick="closeModal('editProductModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (MWK)</label>
+                    <input type="number" id="editProductPrice" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Stock Quantity</label>
+                    <input type="number" id="editProductStock" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Low Stock Alert</label>
+                    <input type="number" id="editProductLowStock" required min="1">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> Update Product
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Supplier Modal -->
+    <div id="addSupplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Supplier</h2>
+                <button class="modal-close" onclick="closeModal('addSupplierModal')">&times;</button>
+            </div>
+            <form id="addSupplierForm">
+                <div class="form-group">
+                    <label for="supplierName">Supplier Name *</label>
+                    <input type="text" id="supplierName" placeholder="e.g., ABC Cement Ltd" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplierContact">Contact Person *</label>
+                    <input type="text" id="supplierContact" placeholder="e.g., John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplierPhone">Phone Number *</label>
+                    <input type="tel" id="supplierPhone" placeholder="e.g., 0888123456" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplierEmail">Email Address</label>
+                    <input type="email" id="supplierEmail" placeholder="e.g., info@supplier.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="supplierProducts">Products/Items Supplied *</label>
+                    <input type="text" id="supplierProducts" placeholder="e.g., Cement, Bricks, Timber" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Add Supplier
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addSupplierModal')" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Must load database initialization FIRST -->
+    <script src="js/db-ini.js"></script>
+    <!-- Then load manager script -->
+    <script src="js/manager.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Builder's Solution - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <p>Loading Builder's Solution...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="logo-section">
+                <i class="fas fa-hammer"></i>
+                <h1>Builder's Solution</h1>
+                <p>Inventory & Sales Management</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+            <div class="register-link">
+                <p>New customer? <a href="#" id="showRegister">Register here</a></p>
+                <p><a href="#" id="forgotPasswordLink" style="font-size: 0.9em; color: #666;">Forgot password?</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Screen -->
+    <div id="registerScreen" class="screen">
+        <div class="register-container">
+            <div class="header-section">
+                <button class="btn-back" id="backToLogin">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Customer Registration</h2>
+            </div>
+            <form id="registerForm" class="register-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="regName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="regPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Reset Screen -->
+    <div id="passwordResetScreen" class="screen">
+        <div class="register-container">
+            <div class="header-section">
+                <button class="btn-back" id="backFromReset">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Reset Password</h2>
+            </div>
+            
+            <!-- Step 1: Enter Username/Email -->
+            <div id="resetStep1" class="reset-step">
+                <form id="resetRequestForm" class="register-form">
+                    <div class="form-group">
+                        <label>Username or Email</label>
+                        <input type="text" id="resetUsername" placeholder="Enter your username or email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Send Verification Code
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Step 2: Enter Verification Code -->
+            <div id="resetStep2" class="reset-step" style="display:none;">
+                <form id="resetCodeForm" class="register-form">
+                    <p style="text-align:center; color:#666; margin-bottom:15px;">
+                        Verification code sent to your email. It will expire in 10 minutes.
+                    </p>
+                    <div class="form-group">
+                        <label>Verification Code</label>
+                        <input type="text" id="resetCode" placeholder="Enter 6-digit code" maxlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Verify Code
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="resendCodeBtn" style="margin-top:10px;">
+                        Resend Code
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Step 3: New Password -->
+            <div id="resetStep3" class="reset-step" style="display:none;">
+                <form id="resetPasswordForm" class="register-form">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-lock"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Must load database initialization FIRST -->
+    <script src="js/db-ini.js"></script>
+    <!-- Then load other scripts -->
+    <script src="js/login.js"></script>
+</body>
+</html>

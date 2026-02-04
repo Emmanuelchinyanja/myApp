@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Builder's Solution</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Customer Dashboard Home -->
+    <div id="customerDashboard" class="screen active">
+        <div class="mobile-header">
+            <h2>Builder's Solution</h2>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Welcome, <span id="customerName">Customer</span>!</h3>
+                <p>Browse products and make purchases</p>
+            </div>
+            <div class="nav-cards">
+                <div class="nav-card" onclick="showSection('browseProducts')">
+                    <i class="fas fa-box"></i>
+                    <h4>Browse Products</h4>
+                    <p>View available items</p>
+                </div>
+                <div class="nav-card" onclick="showSection('myCart')">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h4>My Cart</h4>
+                    <span class="badge" id="cartCount">0</span>
+                </div>
+                <div class="nav-card" onclick="showSection('myOrders')">
+                    <i class="fas fa-receipt"></i>
+                    <h4>My Orders</h4>
+                    <p>View order history</p>
+                </div>
+                <div class="nav-card" onclick="showSection('quotations')">
+                    <i class="fas fa-file-invoice"></i>
+                    <h4>Quotations</h4>
+                    <p>Request quotes</p>
+                </div>
+                <div class="nav-card" onclick="showSection('feedback')">
+                    <i class="fas fa-comment"></i>
+                    <h4>Feedback</h4>
+                    <p>Share your thoughts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Browse Products Screen -->
+    <div id="browseProducts" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('customerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Products</h2>
+            <button class="btn-cart" onclick="showSection('myCart')">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="badge" id="cartCountHeader">0</span>
+            </button>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchProducts" placeholder="Search products...">
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+    </div>
+
+    <!-- Cart Screen -->
+    <div id="myCart" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('browseProducts')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>My Cart</h2>
+        </div>
+        <div class="cart-content">
+            <div id="cartItems"></div>
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="cartSubtotal">MWK 0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span id="cartTotal">MWK 0</span>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="proceedToCheckout()">
+                    <i class="fas fa-credit-card"></i> Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Screen -->
+    <div id="checkout" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('myCart')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Checkout</h2>
+        </div>
+        <div class="checkout-content">
+            <div class="payment-methods">
+                <h3>Select Payment Method</h3>
+                <div class="payment-option" onclick="selectPayment('airtel')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Airtel Money</span>
+                </div>
+                <div class="payment-option" onclick="selectPayment('tnm')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>TNM Mpamba</span>
+                </div>
+                <div class="payment-option" onclick="selectPayment('bank')">
+                    <i class="fas fa-university"></i>
+                    <span>Bank Transfer</span>
+                </div>
+            </div>
+            <div id="paymentDetails" class="payment-details" style="display:none;">
+                <h3>Payment Details</h3>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="paymentPhone" placeholder="Enter phone number">
+                </div>
+                <div class="order-summary">
+                    <h4>Order Summary</h4>
+                    <div id="checkoutSummary"></div>
+                    <div class="total-amount">
+                        <strong>Total: <span id="checkoutTotal">MWK 0</span></strong>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="completePayment()">
+                    <i class="fas fa-check"></i> Complete Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Orders Screen -->
+    <div id="myOrders" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('customerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>My Orders</h2>
+        </div>
+        <div class="dashboard-content">
+            <div id="ordersList"></div>
+        </div>
+    </div>
+
+    <!-- Quotations Screen -->
+    <div id="quotations" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('customerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Quotations</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Request a Quotation</h3>
+                <p>Get a price estimate for your building project</p>
+                <form id="quotationForm" style="margin-top:20px;">
+                    <div class="form-group">
+                        <label>Project Description</label>
+                        <textarea id="quotationDescription" rows="4" placeholder="Describe your building project..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Expected Budget (MWK)</label>
+                        <input type="number" id="quotationBudget" placeholder="e.g., 5000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Phone</label>
+                        <input type="tel" id="quotationPhone" placeholder="+265 888 123 456" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-paper-plane"></i> Submit Request
+                    </button>
+                </form>
+            </div>
+            <div id="quotationsList" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- Feedback Screen -->
+    <div id="feedback" class="screen">
+        <div class="mobile-header">
+            <button class="btn-back" onclick="showSection('customerDashboard')">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>Feedback</h2>
+        </div>
+        <div class="dashboard-content">
+            <div class="welcome-card">
+                <h3>Share Your Feedback</h3>
+                <p>Help us improve our service</p>
+                <form id="feedbackForm" style="margin-top:20px;">
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <select id="feedbackRating" required>
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Good</option>
+                            <option value="3">⭐⭐⭐ Average</option>
+                            <option value="2">⭐⭐ Poor</option>
+                            <option value="1">⭐ Very Poor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Comments</label>
+                        <textarea id="feedbackComment" rows="5" placeholder="Tell us about your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+            <div id="feedbackHistory" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- jQuery Library (REQUIRED for dashboard functionality) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Must load database initialization FIRST -->
+    <script src="js/db-ini.js"></script>
+    <!-- Then load customer script -->
+    <script src="js/customer.js"></script>
+</body>
+</html>
