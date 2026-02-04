@@ -132,6 +132,25 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
+    <!-- Report Preview Modal -->
+    <div id="reportPreviewModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:90%; max-height:90vh; overflow:auto;">
+            <div class="modal-header">
+                <h3>Daily Report Preview</h3>
+                <button class="btn-close" onclick="closeReportPreview()">&times;</button>
+            </div>
+            <div id="reportPreviewContent" style="padding:20px;">
+                <!-- Report content will be shown here -->
+            </div>
+            <div class="modal-footer" style="padding:20px; text-align:center;">
+                <button class="btn btn-primary" onclick="exportDailyReportFromPreview()">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+                <button class="btn btn-secondary" onclick="closeReportPreview()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- jsPDF Libraries for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     

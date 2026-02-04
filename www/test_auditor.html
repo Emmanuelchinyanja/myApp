@@ -42,7 +42,7 @@
                     id: 2,
                     customerName: 'Jane Smith',
                     staffName: 'Bob Wilson',
-                    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+                    date: new Date().toISOString(),
                     total: 70000,
                     paymentMethod: 'mobile',
                     status: 'completed',
@@ -61,6 +61,30 @@
                     items: [
                         { productId: 3, name: 'Roofing Sheets', quantity: 1, price: 25000 }
                     ]
+                },
+                {
+                    id: 4,
+                    customerName: 'Sarah Davis',
+                    staffName: 'Bob Wilson',
+                    date: new Date().toISOString(),
+                    total: 8000,
+                    paymentMethod: 'cash',
+                    status: 'completed',
+                    items: [
+                        { productId: 4, name: 'Timber 4x2', quantity: 1, price: 8000 }
+                    ]
+                },
+                {
+                    id: 5,
+                    customerName: 'Tom Wilson',
+                    staffName: 'Alice Johnson',
+                    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+                    total: 35000,
+                    paymentMethod: 'mobile',
+                    status: 'completed',
+                    items: [
+                        { productId: 5, name: 'White Paint 20L', quantity: 1, price: 35000 }
+                    ]
                 }
             ];
             
@@ -68,14 +92,16 @@
             const sampleProducts = [
                 { id: 1, name: 'Cement 50kg', category: 'cement', price: 45000, stock: 200 },
                 { id: 2, name: 'Red Bricks', category: 'bricks', price: 350, stock: 5000 },
-                { id: 3, name: 'Roofing Sheets', category: 'roofing', price: 25000, stock: 150 }
+                { id: 3, name: 'Roofing Sheets', category: 'roofing', price: 25000, stock: 150 },
+                { id: 4, name: 'Timber 4x2', category: 'timber', price: 8000, stock: 80 },
+                { id: 5, name: 'White Paint 20L', category: 'paint', price: 35000, stock: 45 }
             ];
             
             // Save to localStorage
             localStorage.setItem('orders', JSON.stringify(sampleOrders));
             localStorage.setItem('products', JSON.stringify(sampleProducts));
             
-            document.getElementById('output').innerHTML = '<p style="color: green;">✓ Sample data setup complete!</p>';
+            document.getElementById('output').innerHTML = '<p style="color: green;">✓ Sample data setup complete! Now you can test the PDF export functionality.</p>';
         }
         
         function clearAllData() {

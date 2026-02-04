@@ -4,6 +4,7 @@ let currentUser = null;
 let products = [];
 let orders = [];
 let suppliers = [];
+let feedback = [];
 
 // Check if user is logged in
 $(window).on('load', function() {
@@ -14,7 +15,7 @@ $(window).on('load', function() {
     }
     
     currentUser = JSON.parse(userData);
-    if (currentUser.role !== 'manager') {
+    if (currentUser.role !== 'manager' && currentUser.role !== 'admin') {
         window.location.href = 'index.html';
         return;
     }
@@ -29,82 +30,136 @@ $(window).on('load', function() {
         
         // Also listen for storage events from other tabs
         window.addEventListener('storage', function(e) {
-            if (e.key === 'orders' || e.key === 'products' || e.key === 'suppliers') {
+            if (e.key === 'orders' || e.key === 'products' || e.key === 'suppliers' || e.key === 'feedback') {
                 refreshAllFromStorage();
             }
         });
     });
 });
 
-// Wait until dbReady flag or localStorage has products key
+// Wait until dbReady flag or localStorage has data
 function waitForDataReady(cb, attempts = 0) {
-    if (window.dbReady || localStorage.getItem('products') !== null || attempts > 30) {
+    if (window.dbReady || localStorage.getItem('products') !== null || localStorage.getItem('orders') !== null || attempts > 30) {
         cb();
     } else {
         setTimeout(() => waitForDataReady(cb, attempts + 1), 200);
     }
 }
 
-// Refresh data from localStorage to see real-time updates
-function refreshDataFromStorage() {
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-        orders = JSON.parse(savedOrders);
-    }
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-        products = JSON.parse(savedProducts);
-    }
-    const savedSuppliers = localStorage.getItem('suppliers');
-    if (savedSuppliers) {
-        suppliers = JSON.parse(savedSuppliers);
-    }
-    updateDashboardStats();
-}
-
-// Refresh products, orders and suppliers from storage
-function refreshAllFromStorage() {
-    const sp = localStorage.getItem('products');
-    if (sp) products = JSON.parse(sp);
-
-    const so = localStorage.getItem('orders');
-    if (so) orders = JSON.parse(so);
-
-    const ss = localStorage.getItem('suppliers');
-    if (ss) suppliers = JSON.parse(ss);
-
-    updateDashboardStats();
-}
-
-// Initialize Data from localStorage
+// Initialize Data
 function initializeData() {
-    // Load products from localStorage
     const savedProducts = localStorage.getItem('products');
     if (savedProducts) {
         products = JSON.parse(savedProducts);
     }
-    
-    // Load suppliers
-    const savedSuppliers = localStorage.getItem('suppliers');
-    if (savedSuppliers) {
-        suppliers = JSON.parse(savedSuppliers);
-    }
-    
-    // Load orders from localStorage
+
     const savedOrders = localStorage.getItem('orders');
     if (savedOrders) {
         orders = JSON.parse(savedOrders);
     }
+
+    const savedSuppliers = localStorage.getItem('suppliers');
+    if (savedSuppliers) {
+        suppliers = JSON.parse(savedSuppliers);
+    } else {
+        // Initialize with sample suppliers if none exist
+        suppliers = [
+            {
+                id: 1,
+                name: 'Builders Depot Ltd',
+                contact: '+265 991 234 567',
+                email: 'info@buildersdepot.mw',
+                products: 'Cement, Bricks, Steel',
+                address: 'Lilongwe, Area 23'
+            },
+            {
+                id: 2,
+                name: 'Hardware Solutions',
+                contact: '+265 888 345 678',
+                email: 'sales@hardware.mw',
+                products: 'Tools, Paint, Plumbing',
+                address: 'Blantyre, Chichiri'
+            }
+        ];
+        localStorage.setItem('suppliers', JSON.stringify(suppliers));
+    }
+
+    const savedFeedback = localStorage.getItem('feedback');
+    if (savedFeedback) {
+        feedback = JSON.parse(savedFeedback);
+    } else {
+        // Initialize with sample feedback if none exist
+        feedback = [
+            {
+                id: 1,
+                customerName: 'John Banda',
+                rating: 5,
+                comment: 'Excellent service and quality products!',
+                date: new Date().toISOString(),
+                orderId: 1
+            },
+            {
+                id: 2,
+                customerName: 'Mary Phiri',
+                rating: 4,
+                comment: 'Good prices and fast delivery.',
+                date: new Date().toISOString(),
+                orderId: 2
+            }
+        ];
+        localStorage.setItem('feedback', JSON.stringify(feedback));
+    }
     
-    console.log('✓ Data loaded from localStorage');
+    console.log('✓ Manager data loaded:');
     console.log('  - Products:', products.length);
     console.log('  - Orders:', orders.length);
     console.log('  - Suppliers:', suppliers.length);
+    console.log('  - Feedback:', feedback.length);
 }
 
 function loadManagerDashboard() {
     $('#managerName').text(currentUser.name);
     updateDashboardStats();
+}
+
+// Refresh data from localStorage
+function refreshAllFromStorage() {
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        products = JSON.parse(savedProducts);
+    }
+
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        orders = JSON.parse(savedOrders);
+    }
+
+    const savedSuppliers = localStorage.getItem('suppliers');
+    if (savedSuppliers) {
+        suppliers = JSON.parse(savedSuppliers);
+    }
+
+    const savedFeedback = localStorage.getItem('feedback');
+    if (savedFeedback) {
+        feedback = JSON.parse(savedFeedback);
+    }
+    
+    // Update current screen if needed
+    updateDashboardStats();
+    
+    // Update specific screens if they're active
+    if ($('#inventoryManagement').hasClass('active')) {
+        loadInventory();
+    }
+    if ($('#suppliers').hasClass('active')) {
+        loadSuppliers();
+    }
+    if ($('#staffPerformance').hasClass('active')) {
+        loadStaffPerformance();
+    }
+    if ($('#customerFeedback').hasClass('active')) {
+        loadCustomerFeedback();
+    }
 }
 
 // Update Dashboard Stats - Works with localStorage orders
@@ -280,6 +335,30 @@ document.getElementById('addProductForm').addEventListener('submit', function(e)
     this.reset();
     loadInventory();
 });
+
+// Screen Management
+function showSection(sectionId) {
+    $('.screen').removeClass('active');
+    $('#' + sectionId).addClass('active');
+
+    switch(sectionId) {
+        case 'inventoryManagement':
+            loadInventory();
+            break;
+        case 'suppliers':
+            loadSuppliers();
+            break;
+        case 'reports':
+            loadReports();
+            break;
+        case 'staffPerformance':
+            loadStaffPerformance();
+            break;
+        case 'customerFeedback':
+            loadCustomerFeedback();
+            break;
+    }
+}
 
 // Suppliers Management
 function showAddSupplier() {
@@ -501,6 +580,7 @@ function generateReport() {
             </button>
         </div>
     `);
+    showToast('✓ Report generated successfully', 'success');
 }
 
 function generateDailySalesReport(reportOrders, reportDate) {

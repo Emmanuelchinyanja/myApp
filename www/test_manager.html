@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div style="padding: 20px; max-width: 800px; margin: 0 auto;">
+        <h1>Manager Dashboard Test</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="setupSampleData()">
+                <i class="fas fa-database"></i> Setup Sample Data
+            </button>
+            <button class="btn btn-success" onclick="testManagerLogin()">
+                <i class="fas fa-sign-in-alt"></i> Test Manager Login
+            </button>
+            <button class="btn btn-secondary" onclick="clearData()">
+                <i class="fas fa-trash"></i> Clear Data
+            </button>
+        </div>
+        
+        <div id="testOutput" style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+            <h4>Test Output:</h4>
+            <div id="testLog"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        function testLog(message) {
+            console.log(message);
+            $('#testLog').append('<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>');
+        }
+        
+        function setupSampleData() {
+            testLog('Setting up sample data...');
+            
+            // Sample products
+            const sampleProducts = [
+                {
+                    id: 1,
+                    name: 'Cement 50kg',
+                    category: 'cement',
+                    price: 15000,
+                    stock: 25,
+                    lowStock: 10,
+                    icon: '🪣'
+                },
+                {
+                    id: 2,
+                    name: 'Steel Rods 10mm',
+                    category: 'steel',
+                    price: 8000,
+                    stock: 8,
+                    lowStock: 15,
+                    icon: '🔧'
+                },
+                {
+                    id: 3,
+                    name: 'Bricks (100 pcs)',
+                    category: 'bricks',
+                    price: 12000,
+                    stock: 50,
+                    lowStock: 20,
+                    icon: '🧱'
+                }
+            ];
+            
+            // Sample orders
+            const today = new Date().toISOString();
+            const sampleOrders = [
+                {
+                    id: 1,
+                    customerName: 'John Banda',
+                    staffName: 'Alice Johnson',
+                    date: today,
+                    total: 45000,
+                    paymentMethod: 'cash',
+                    status: 'completed'
+                },
+                {
+                    id: 2,
+                    customerName: 'Mary Phiri',
+                    staffName: 'Bob Wilson',
+                    date: today,
+                    total: 70000,
+                    paymentMethod: 'mobile',
+                    status: 'completed'
+                },
+                {
+                    id: 3,
+                    customerName: 'Mike Brown',
+                    staffName: 'Alice Johnson',
+                    date: today,
+                    total: 25000,
+                    paymentMethod: 'card',
+                    status: 'completed'
+                }
+            ];
+            
+            // Sample suppliers
+            const sampleSuppliers = [
+                {
+                    id: 1,
+                    name: 'Builders Depot Ltd',
+                    contact: '+265 991 234 567',
+                    phone: '+265 991 234 567',
+                    email: 'info@buildersdepot.mw',
+                    products: 'Cement, Bricks, Steel',
+                    address: 'Lilongwe, Area 23'
+                },
+                {
+                    id: 2,
+                    name: 'Hardware Solutions',
+                    contact: '+265 888 345 678',
+                    phone: '+265 888 345 678',
+                    email: 'sales@hardware.mw',
+                    products: 'Tools, Paint, Plumbing',
+                    address: 'Blantyre, Chichiri'
+                }
+            ];
+            
+            // Sample feedback
+            const sampleFeedback = [
+                {
+                    id: 1,
+                    customerName: 'John Banda',
+                    rating: 5,
+                    comment: 'Excellent service and quality products!',
+                    date: new Date().toISOString(),
+                    orderId: 1
+                },
+                {
+                    id: 2,
+                    customerName: 'Mary Phiri',
+                    rating: 4,
+                    comment: 'Good prices and fast delivery.',
+                    date: new Date().toISOString(),
+                    orderId: 2
+                }
+            ];
+            
+            localStorage.setItem('products', JSON.stringify(sampleProducts));
+            localStorage.setItem('orders', JSON.stringify(sampleOrders));
+            localStorage.setItem('suppliers', JSON.stringify(sampleSuppliers));
+            localStorage.setItem('feedback', JSON.stringify(sampleFeedback));
+            
+            testLog('✓ Sample data setup complete');
+            testLog('  - Products: ' + sampleProducts.length);
+            testLog('  - Orders: ' + sampleOrders.length);
+            testLog('  - Suppliers: ' + sampleSuppliers.length);
+            testLog('  - Feedback: ' + sampleFeedback.length);
+        }
+        
+        function testManagerLogin() {
+            testLog('Testing manager login...');
+            
+            const managerUser = {
+                id: 1,
+                name: 'Test Manager',
+                email: 'manager@test.com',
+                role: 'manager',
+                permissions: ['inventory', 'reports', 'staff', 'suppliers']
+            };
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(managerUser));
+            
+            testLog('✓ Manager user created and stored in sessionStorage');
+            testLog('  - Name: ' + managerUser.name);
+            testLog('  - Role: ' + managerUser.role);
+            testLog('  - Permissions: ' + managerUser.permissions.join(', '));
+            
+            // Open manager dashboard
+            window.open('manager_dashboard.html', '_blank');
+        }
+        
+        function clearData() {
+            localStorage.removeItem('products');
+            localStorage.removeItem('orders');
+            localStorage.removeItem('suppliers');
+            localStorage.removeItem('feedback');
+            sessionStorage.removeItem('currentUser');
+            $('#testLog').html('');
+            testLog('✓ All data cleared');
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = $('#toast');
+            if (toast.length) {
+                toast.text(message)
+                    .removeClass('success error warning info')
+                    .addClass(type)
+                    .addClass('show');
+                
+                setTimeout(() => {
+                    toast.removeClass('show');
+                }, 3000);
+            }
+        }
+        
+        $(document).ready(function() {
+            testLog('Manager test page loaded');
+            testLog('Click "Setup Sample Data" then "Test Manager Login" to test the dashboard');
+        });
+    </script>
+</body>
+</html>
