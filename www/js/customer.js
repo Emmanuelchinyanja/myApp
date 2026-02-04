@@ -54,6 +54,43 @@ function initializeData() {
     if (savedCart) {
         cart = JSON.parse(savedCart);
     }
+    
+    // Set up real-time data sync
+    setInterval(refreshAllFromStorage, 3000);
+    
+    // Listen for storage events from other tabs
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'products' || e.key === 'orders') {
+            refreshAllFromStorage();
+            // Refresh current view if needed
+            if ($('#browseProducts').hasClass('active')) {
+                loadProducts();
+            } else if ($('#myOrders').hasClass('active')) {
+                loadOrders();
+            }
+        }
+    });
+}
+
+// Reload all data from localStorage to stay in sync
+function refreshAllFromStorage() {
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        try {
+            products = JSON.parse(savedProducts);
+        } catch (e) {
+            console.error('Failed to parse products from storage', e);
+        }
+    }
+    
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        try {
+            orders = JSON.parse(savedOrders);
+        } catch (e) {
+            console.error('Failed to parse orders from storage', e);
+        }
+    }
 }
 
 // Screen Management

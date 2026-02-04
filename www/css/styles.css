@@ -1618,3 +1618,264 @@ body {
         max-height: 300px;
     }
 }
+
+/* Report Table Styles */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.report-table th {
+    background: var(--primary-color);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.report-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.report-table tr:last-child td {
+    border-bottom: none;
+}
+
+.report-table tr:hover {
+    background: #f8f9fa;
+}
+
+.report-output {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-top: 20px;
+}
+
+.report-header {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.report-header h3 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Report Stats Grid */
+.report-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.report-stat-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.report-stat-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.report-stat-card p {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Report Filters */
+.report-filters {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.report-filters .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.report-filters label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.report-filters input,
+.report-filters select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.report-filters button {
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.report-filters button:hover {
+    background: var(--secondary-color);
+}
+
+/* Export Buttons */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.export-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-export-pdf {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-export-pdf:hover {
+    background: #dc2626;
+}
+
+.btn-export-excel {
+    background: #10b981;
+    color: white;
+}
+
+.btn-export-excel:hover {
+    background: #059669;
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+    background: #f8f9fa;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 20px 0;
+}
+
+.chart-placeholder i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Audit Trail Specific */
+.audit-trail-item {
+    background: white;
+    border-left: 4px solid var(--primary-color);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: var(--shadow);
+}
+
+.audit-trail-item.sales {
+    border-left-color: var(--success-color);
+}
+
+.audit-trail-item.inventory {
+    border-left-color: var(--warning-color);
+}
+
+.audit-trail-item.user {
+    border-left-color: var(--primary-color);
+}
+
+/* Responsive Design for Reports */
+@media (max-width: 768px) {
+    .report-filters {
+        flex-direction: column;
+    }
+    
+    .report-filters .form-group {
+        min-width: 100%;
+    }
+    
+    .report-table {
+        font-size: 12px;
+    }
+    
+    .report-table th,
+    .report-table td {
+        padding: 8px;
+    }
+    
+    .report-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .export-buttons button {
+        width: 100%;
+        justify-content: center;
+    }
+}

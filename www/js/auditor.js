@@ -3,6 +3,7 @@
 let currentUser = null;
 let orders = [];
 let products = [];
+let auditLog = [];
 
 // Check if user is logged in
 $(window).on('load', function() {
@@ -13,7 +14,7 @@ $(window).on('load', function() {
     }
     
     currentUser = JSON.parse(userData);
-    if (currentUser.role !== 'auditor') {
+    if (currentUser.role !== 'auditor' && currentUser.role !== 'admin') {
         window.location.href = 'index.html';
         return;
     }
@@ -21,6 +22,16 @@ $(window).on('load', function() {
     waitForDataReady(function() {
         initializeData();
         loadAuditorDashboard();
+        
+        // Refresh data every 5 seconds for real-time updates
+        setInterval(refreshAllFromStorage, 5000);
+        
+        // Listen for storage events from other tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'orders' || e.key === 'products' || e.key === 'auditLog') {
+                refreshAllFromStorage();
+            }
+        });
     });
 });
 
@@ -43,6 +54,41 @@ function initializeData() {
     const savedProducts = localStorage.getItem('products');
     if (savedProducts) {
         products = JSON.parse(savedProducts);
+    }
+    
+    const savedAuditLog = localStorage.getItem('auditLog');
+    if (savedAuditLog) {
+        auditLog = JSON.parse(savedAuditLog);
+    } else {
+        auditLog = [];
+    }
+    
+    console.log('✓ Auditor data loaded:');
+    console.log('  - Orders:', orders.length);
+    console.log('  - Products:', products.length);
+    console.log('  - Audit Logs:', auditLog.length);
+}
+
+// Refresh data from localStorage
+function refreshAllFromStorage() {
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        orders = JSON.parse(savedOrders);
+    }
+
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        products = JSON.parse(savedProducts);
+    }
+    
+    const savedAuditLog = localStorage.getItem('auditLog');
+    if (savedAuditLog) {
+        auditLog = JSON.parse(savedAuditLog);
+    }
+    
+    // Update current screen if it's the analytics view
+    if ($('#salesAnalytics').hasClass('active')) {
+        loadSalesAnalytics();
     }
 }
 
@@ -126,13 +172,15 @@ function generateDailyReport() {
                 </tr>
             </thead>
             <tbody>
-                ${Object.entries(paymentBreakdown).map(([method, data]) => `
-                    <tr>
-                        <td style="text-transform:capitalize;">${method}</td>
-                        <td>${data.count}</td>
-                        <td>MWK ${data.total.toLocaleString()}</td>
-                    </tr>
-                `).join('')}
+                ${Object.entries(paymentBreakdown).map(([method, data]) => {
+                    return `
+                        <tr>
+                            <td style="text-transform:capitalize;">${method}</td>
+                            <td>${data.count}</td>
+                            <td>MWK ${data.total.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
 
@@ -148,15 +196,17 @@ function generateDailyReport() {
                 </tr>
             </thead>
             <tbody>
-                ${filteredOrders.map(order => `
-                    <tr>
-                        <td>${order.id}</td>
-                        <td>${new Date(order.date).toLocaleTimeString()}</td>
-                        <td>${order.customerName || order.staffName || 'N/A'}</td>
-                        <td>MWK ${order.total.toLocaleString()}</td>
-                        <td style="text-transform:capitalize;">${order.paymentMethod || 'cash'}</td>
-                    </tr>
-                `).join('')}
+                ${filteredOrders.map(order => {
+                    return `
+                        <tr>
+                            <td>${order.id}</td>
+                            <td>${new Date(order.date).toLocaleTimeString()}</td>
+                            <td>${order.customerName || order.staffName || 'N/A'}</td>
+                            <td>MWK ${order.total.toLocaleString()}</td>
+                            <td style="text-transform:capitalize;">${order.paymentMethod || 'cash'}</td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
 
@@ -188,7 +238,7 @@ function exportDailyReport() {
 
 // Sales Analytics
 function loadSalesAnalytics() {
-    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
     const totalOrdersCount = orders.length;
     
     // Count unique customers (simplified)
@@ -201,75 +251,82 @@ function loadSalesAnalytics() {
     // Calculate sales by category
     const categoryBreakdown = {};
     orders.forEach(order => {
-        order.items.forEach(item => {
-            const product = products.find(p => p.id === item.productId);
-            const category = product ? product.category : 'other';
-            
-            if (!categoryBreakdown[category]) {
-                categoryBreakdown[category] = 0;
-            }
-            categoryBreakdown[category] += item.price * item.quantity;
-        });
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const product = products.find(p => p.id === item.productId);
+                const category = product ? product.category : 'other';
+                
+                if (!categoryBreakdown[category]) {
+                    categoryBreakdown[category] = 0;
+                }
+                categoryBreakdown[category] += (item.price || 0) * (item.quantity || 1);
+            });
+        }
     });
 
     const chartDiv = document.getElementById('analyticsChart');
-    chartDiv.innerHTML = `
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Sales Amount</th>
-                    <th>Percentage</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${Object.entries(categoryBreakdown).map(([category, amount]) => {
-                    const percentage = ((amount / totalRevenue) * 100).toFixed(1);
-                    return `
-                        <tr>
-                            <td style="text-transform:capitalize;">${category}</td>
-                            <td>MWK ${amount.toLocaleString()}</td>
-                            <td>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <div style="flex:1; background:#e5e7eb; height:8px; border-radius:4px;">
-                                        <div style="width:${percentage}%; background:var(--primary-color); height:100%; border-radius:4px;"></div>
+    if (chartDiv) {
+        chartDiv.innerHTML = `
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Sales Amount</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${Object.entries(categoryBreakdown).map(([category, amount]) => {
+                        const percentage = totalRevenue > 0 ? ((amount / totalRevenue) * 100).toFixed(1) : 0;
+                        return `
+                            <tr>
+                                <td style="text-transform:capitalize;">${category}</td>
+                                <td>MWK ${amount.toLocaleString()}</td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex:1; background:#e5e7eb; height:8px; border-radius:4px;">
+                                            <div style="width:${percentage}%; background:var(--primary-color); height:100%; border-radius:4px;"></div>
+                                        </div>
+                                        <span>${percentage}%</span>
                                     </div>
-                                    <span>${percentage}%</span>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
 
-        <div style="margin-top:30px;">
-            <h4 style="margin-bottom:15px;">Top Selling Products</h4>
-            ${getTopProducts()}
-        </div>
+            <div style="margin-top:30px;">
+                <h4 style="margin-bottom:15px;">Top Selling Products</h4>
+                ${getTopProducts()}
+            </div>
 
-        <div style="margin-top:30px;">
-            <h4 style="margin-bottom:15px;">Sales Trends</h4>
-            ${getSalesTrends()}
-        </div>
-    `;
+            <div style="margin-top:30px;">
+                <h4 style="margin-bottom:15px;">Sales Trends</h4>
+                ${getSalesTrends()}
+            </div>
+        `;
+    }
 }
 
 function getTopProducts() {
     const productSales = {};
     
     orders.forEach(order => {
-        order.items.forEach(item => {
-            if (!productSales[item.productId]) {
-                productSales[item.productId] = {
-                    name: item.name,
-                    quantity: 0,
-                    revenue: 0
-                };
-            }
-            productSales[item.productId].quantity += item.quantity;
-            productSales[item.productId].revenue += item.price * item.quantity;
-        });
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const productId = item.productId || item.id;
+                if (!productSales[productId]) {
+                    productSales[productId] = {
+                        name: item.name || item.productName || 'Unknown Product',
+                        quantity: 0,
+                        revenue: 0
+                    };
+                }
+                productSales[productId].quantity += (item.quantity || 1);
+                productSales[productId].revenue += (item.price || 0) * (item.quantity || 1);
+            });
+        }
     });
 
     const sorted = Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
@@ -284,13 +341,15 @@ function getTopProducts() {
                 </tr>
             </thead>
             <tbody>
-                ${sorted.map(product => `
-                    <tr>
-                        <td>${product.name}</td>
-                        <td>${product.quantity}</td>
-                        <td>MWK ${product.revenue.toLocaleString()}</td>
-                    </tr>
-                `).join('')}
+                ${sorted.map(product => {
+                    return `
+                        <tr>
+                            <td>${product.name}</td>
+                            <td>${product.quantity}</td>
+                            <td>MWK ${product.revenue.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
     `;
@@ -309,13 +368,15 @@ function getSalesTrends() {
     }
 
     orders.forEach(order => {
-        const orderDate = new Date(order.date).toLocaleDateString();
-        if (last7Days.hasOwnProperty(orderDate)) {
-            last7Days[orderDate] += order.total;
+        if (order.date) {
+            const orderDate = new Date(order.date).toLocaleDateString();
+            if (last7Days.hasOwnProperty(orderDate)) {
+                last7Days[orderDate] += (order.total || 0);
+            }
         }
     });
 
-    const maxValue = Math.max(...Object.values(last7Days));
+    const maxValue = Math.max(...Object.values(last7Days), 1); // Avoid division by zero
 
     return `
         <table class="report-table">
@@ -328,7 +389,7 @@ function getSalesTrends() {
             </thead>
             <tbody>
                 ${Object.entries(last7Days).map(([date, amount]) => {
-                    const barWidth = maxValue > 0 ? (amount / maxValue) * 100 : 0;
+                    const barWidth = (amount / maxValue) * 100;
                     return `
                         <tr>
                             <td>${date}</td>
@@ -414,18 +475,22 @@ function generateAuditTrail() {
                 </tr>
             </thead>
             <tbody>
-                ${filteredOrders.map(order => `
-                    <tr>
-                        <td>${order.id}</td>
-                        <td>${order.customerName || 'N/A'}</td>
-                        <td>${order.staffName || 'N/A'}</td>
-                        <td>${new Date(order.date).toLocaleString()}</td>
-                        <td>MWK ${order.total.toLocaleString()}</td>
-                        <td style="text-transform:capitalize;">${order.paymentMethod || 'cash'}</td>
-                    </tr>
-                `).join('')}
+                ${filteredOrders.map(order => getAuditTrailRow(order)).join('')}
             </tbody>
         </table>
+    `);
+}
+
+function getAuditTrailRow(order) {
+    return `
+        <tr>
+            <td>${order.id}</td>
+            <td>${order.customerName || 'N/A'}</td>
+            <td>${order.staffName || 'N/A'}</td>
+            <td>${new Date(order.date).toLocaleString()}</td>
+            <td>MWK ${order.total.toLocaleString()}</td>
+            <td style="text-transform:capitalize;">${order.paymentMethod || 'cash'}</td>
+        </tr>
     `;
 }
 

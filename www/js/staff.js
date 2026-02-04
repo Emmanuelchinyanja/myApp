@@ -52,6 +52,47 @@ function initializeData() {
     if (savedNotes) {
         notifications = JSON.parse(savedNotes);
     }
+    
+    // Set up real-time data sync
+    setInterval(refreshAllFromStorage, 3000);
+    
+    // Listen for storage events from other tabs
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'orders' || e.key === 'products' || e.key === 'notifications') {
+            refreshAllFromStorage();
+            loadStaffDashboard(); // Refresh dashboard stats
+        }
+    });
+}
+
+// Reload all data from localStorage to stay in sync with other clients
+function refreshAllFromStorage() {
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        try {
+            products = JSON.parse(savedProducts);
+        } catch (e) {
+            console.error('Failed to parse products from storage', e);
+        }
+    }
+    
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        try {
+            orders = JSON.parse(savedOrders);
+        } catch (e) {
+            console.error('Failed to parse orders from storage', e);
+        }
+    }
+    
+    const savedNotes = localStorage.getItem('notifications');
+    if (savedNotes) {
+        try {
+            notifications = JSON.parse(savedNotes);
+        } catch (e) {
+            console.error('Failed to parse notifications from storage', e);
+        }
+    }
 }
 
 // Reload products from localStorage to stay in sync with other clients

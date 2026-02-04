@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor Dashboard Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Auditor Dashboard Test Setup</h1>
+    <button onclick="setupSampleData()">Setup Sample Data</button>
+    <button onclick="clearAllData()">Clear All Data</button>
+    <button onclick="testAuditorLogin()">Test Auditor Login</button>
+    
+    <div id="output"></div>
+
+    <!-- jsPDF Libraries for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Must load database initialization FIRST -->
+    <script src="js/db-ini.js"></script>
+    
+    <script>
+        function setupSampleData() {
+            // Sample orders for testing
+            const sampleOrders = [
+                {
+                    id: 1,
+                    customerName: 'John Doe',
+                    staffName: 'Alice Johnson',
+                    date: new Date().toISOString(),
+                    total: 45000,
+                    paymentMethod: 'cash',
+                    status: 'completed',
+                    items: [
+                        { productId: 1, name: 'Cement 50kg', quantity: 1, price: 45000 }
+                    ]
+                },
+                {
+                    id: 2,
+                    customerName: 'Jane Smith',
+                    staffName: 'Bob Wilson',
+                    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+                    total: 70000,
+                    paymentMethod: 'mobile',
+                    status: 'completed',
+                    items: [
+                        { productId: 2, name: 'Red Bricks', quantity: 200, price: 350 }
+                    ]
+                },
+                {
+                    id: 3,
+                    customerName: 'Mike Brown',
+                    staffName: 'Alice Johnson',
+                    date: new Date().toISOString(),
+                    total: 25000,
+                    paymentMethod: 'card',
+                    status: 'completed',
+                    items: [
+                        { productId: 3, name: 'Roofing Sheets', quantity: 1, price: 25000 }
+                    ]
+                }
+            ];
+            
+            // Sample products
+            const sampleProducts = [
+                { id: 1, name: 'Cement 50kg', category: 'cement', price: 45000, stock: 200 },
+                { id: 2, name: 'Red Bricks', category: 'bricks', price: 350, stock: 5000 },
+                { id: 3, name: 'Roofing Sheets', category: 'roofing', price: 25000, stock: 150 }
+            ];
+            
+            // Save to localStorage
+            localStorage.setItem('orders', JSON.stringify(sampleOrders));
+            localStorage.setItem('products', JSON.stringify(sampleProducts));
+            
+            document.getElementById('output').innerHTML = '<p style="color: green;">✓ Sample data setup complete!</p>';
+        }
+        
+        function clearAllData() {
+            localStorage.removeItem('orders');
+            localStorage.removeItem('products');
+            localStorage.removeItem('auditLog');
+            sessionStorage.removeItem('currentUser');
+            document.getElementById('output').innerHTML = '<p style="color: red;">✓ All data cleared!</p>';
+        }
+        
+        function testAuditorLogin() {
+            const auditorUser = {
+                id: 'auditor1',
+                name: 'Test Auditor',
+                email: 'auditor@test.com',
+                role: 'auditor'
+            };
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(auditorUser));
+            document.getElementById('output').innerHTML = '<p style="color: blue;">✓ Auditor user logged in! <a href="auditor_dashboard.html" target="_blank">Open Auditor Dashboard</a></p>';
+        }
+    </script>
+</body>
+</html>

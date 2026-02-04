@@ -26,6 +26,13 @@ $(window).on('load', function() {
 
         // Refresh data every 3 seconds to see real-time updates (products + orders + suppliers)
         setInterval(refreshAllFromStorage, 3000);
+        
+        // Also listen for storage events from other tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'orders' || e.key === 'products' || e.key === 'suppliers') {
+                refreshAllFromStorage();
+            }
+        });
     });
 });
 
@@ -43,8 +50,16 @@ function refreshDataFromStorage() {
     const savedOrders = localStorage.getItem('orders');
     if (savedOrders) {
         orders = JSON.parse(savedOrders);
-        updateDashboardStats();
     }
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        products = JSON.parse(savedProducts);
+    }
+    const savedSuppliers = localStorage.getItem('suppliers');
+    if (savedSuppliers) {
+        suppliers = JSON.parse(savedSuppliers);
+    }
+    updateDashboardStats();
 }
 
 // Refresh products, orders and suppliers from storage
@@ -423,13 +438,17 @@ function initializeSupplierForm() {
 }
 
 function generateReport() {
-    const reportType = $('#reportType').val() || 'sales';
+    const reportType = $('#reportType').val() || 'daily';
     const reportDate = $('#reportDate').val();
     const output = $('#reportOutput');
 
     if (!output.length) return;
 
     let reportOrders = orders;
+    let reportTitle = '';
+    let reportContent = '';
+
+    // Filter by date if provided
     if (reportDate) {
         reportOrders = orders.filter(o => {
             const orderDate = new Date(o.date || o.orderDate).toDateString();
@@ -438,46 +457,392 @@ function generateReport() {
         });
     }
 
+    const totalSales = reportOrders.reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0);
+    const totalOrdersCount = reportOrders.length;
+
+    switch(reportType) {
+        case 'daily':
+            reportTitle = 'DAILY SALES REPORT';
+            reportContent = generateDailySalesReport(reportOrders, reportDate);
+            break;
+        case 'weekly':
+            reportTitle = 'WEEKLY SALES REPORT';
+            reportContent = generateWeeklySalesReport(reportOrders, reportDate);
+            break;
+        case 'monthly':
+            reportTitle = 'MONTHLY SALES REPORT';
+            reportContent = generateMonthlySalesReport(reportOrders, reportDate);
+            break;
+        case 'inventory':
+            reportTitle = 'INVENTORY REPORT';
+            reportContent = generateInventoryReport();
+            break;
+        case 'products':
+            reportTitle = 'PRODUCT PERFORMANCE REPORT';
+            reportContent = generateProductPerformanceReport(reportOrders);
+            break;
+        default:
+            reportTitle = 'SALES REPORT';
+            reportContent = generateDailySalesReport(reportOrders, reportDate);
+    }
+
     output.html(`
-        <h3>${reportType.toUpperCase()} REPORT</h3>
-        <p style="color:var(--text-secondary); margin-bottom:20px;">Date: ${reportDate || 'All Time'}</p>
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${reportOrders.map((order, idx) => `
-                    <tr>
-                        <td>${order.id || order.orderId || idx + 1}</td>
-                        <td>${new Date(order.date || order.orderDate).toLocaleDateString()}</td>
-                        <td>${order.type || 'online'}</td>
-                        <td>MWK ${(order.total || order.totalAmount || 0).toLocaleString()}</td>
-                        <td><span class="text-${order.status === 'completed' ? 'success' : 'warning'}">${order.status || 'completed'}</span></td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-        <div style="margin-top:20px; padding-top:20px; border-top:2px solid var(--border);">
-            <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:bold;">
-                <span>TOTAL SALES:</span>
-                <span class="text-success">MWK ${reportOrders.reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0).toLocaleString()}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-top:10px;">
-                <span>Total Orders:</span>
-                <span>${reportOrders.length}</span>
-            </div>
+        <div class="report-header">
+            <h3>${reportTitle}</h3>
+            <p style="color:var(--text-secondary); margin-bottom:20px;">Date: ${reportDate || 'All Time'}</p>
+        </div>
+        ${reportContent}
+        <div style="margin-top:20px; text-align:center;">
+            <button class="btn btn-primary" onclick="exportToPDF('${reportType}')">
+                <i class="fas fa-download"></i> Export to PDF
+            </button>
+            <button class="btn btn-secondary" onclick="exportToExcel('${reportType}')">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
         </div>
     `);
 }
 
+function generateDailySalesReport(reportOrders, reportDate) {
+    const totalSales = reportOrders.reduce((sum, o) => sum + (o.total || o.totalAmount || 0), 0);
+    const paymentBreakdown = {};
+    
+    reportOrders.forEach(order => {
+        const method = order.paymentMethod || 'cash';
+        if (!paymentBreakdown[method]) {
+            paymentBreakdown[method] = { count: 0, total: 0 };
+        }
+        paymentBreakdown[method].count++;
+        paymentBreakdown[method].total += order.total || order.totalAmount || 0;
+    });
+
+    return `
+        <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+                <i class="fas fa-shopping-bag"></i>
+                <h4>Total Orders</h4>
+                <p>${reportOrders.length}</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-dollar-sign"></i>
+                <h4>Total Revenue</h4>
+                <p>MWK ${totalSales.toLocaleString()}</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>Avg Order</h4>
+                <p>MWK ${reportOrders.length > 0 ? Math.round(totalSales / reportOrders.length).toLocaleString() : 0}</p>
+            </div>
+        </div>
+
+        <h4 style="margin-bottom:10px;">Payment Method Breakdown</h4>
+        <table class="report-table" style="margin-bottom:20px;">
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Orders</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${Object.entries(paymentBreakdown).map(([method, data]) => `
+                    <tr>
+                        <td style="text-transform:capitalize;">${method}</td>
+                        <td>${data.count}</td>
+                        <td>MWK ${data.total.toLocaleString()}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <h4 style="margin-bottom:10px;">Transaction Details</h4>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Time</th>
+                    <th>Customer/Staff</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${reportOrders.map(order => `
+                    <tr>
+                        <td>${order.id || order.orderId || 'N/A'}</td>
+                        <td>${new Date(order.date || order.orderDate).toLocaleTimeString()}</td>
+                        <td>${order.customerName || order.staffName || 'N/A'}</td>
+                        <td>MWK ${(order.total || order.totalAmount || 0).toLocaleString()}</td>
+                        <td style="text-transform:capitalize;">${order.paymentMethod || 'cash'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function generateWeeklySalesReport(reportOrders, reportDate) {
+    const dailyBreakdown = {};
+    
+    reportOrders.forEach(order => {
+        const day = new Date(order.date || order.orderDate).toLocaleDateString();
+        if (!dailyBreakdown[day]) {
+            dailyBreakdown[day] = { count: 0, total: 0 };
+        }
+        dailyBreakdown[day].count++;
+        dailyBreakdown[day].total += order.total || order.totalAmount || 0;
+    });
+
+    return `
+        <h4 style="margin-bottom:10px;">Daily Breakdown</h4>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${Object.entries(dailyBreakdown).map(([day, data]) => `
+                    <tr>
+                        <td>${day}</td>
+                        <td>${data.count}</td>
+                        <td>MWK ${data.total.toLocaleString()}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function generateMonthlySalesReport(reportOrders, reportDate) {
+    const weeklyBreakdown = {};
+    
+    reportOrders.forEach(order => {
+        const week = 'Week ' + Math.ceil(new Date(order.date || order.orderDate).getDate() / 7);
+        if (!weeklyBreakdown[week]) {
+            weeklyBreakdown[week] = { count: 0, total: 0 };
+        }
+        weeklyBreakdown[week].count++;
+        weeklyBreakdown[week].total += order.total || order.totalAmount || 0;
+    });
+
+    return `
+        <h4 style="margin-bottom:10px;">Weekly Breakdown</h4>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${Object.entries(weeklyBreakdown).map(([week, data]) => `
+                    <tr>
+                        <td>${week}</td>
+                        <td>${data.count}</td>
+                        <td>MWK ${data.total.toLocaleString()}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function generateInventoryReport() {
+    const lowStock = products.filter(p => p.stock <= p.lowStock && p.stock > 0);
+    const outOfStock = products.filter(p => p.stock === 0);
+    const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+
+    return `
+        <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+                <i class="fas fa-boxes"></i>
+                <h4>Total Products</h4>
+                <p>${products.length}</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Low Stock</h4>
+                <p>${lowStock.length}</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-times-circle"></i>
+                <h4>Out of Stock</h4>
+                <p>${outOfStock.length}</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-dollar-sign"></i>
+                <h4>Total Value</h4>
+                <p>MWK ${totalValue.toLocaleString()}</p>
+            </div>
+        </div>
+
+        ${lowStock.length > 0 ? `
+            <h4 style="margin-bottom:10px; color:var(--warning-color);">Low Stock Items</h4>
+            <table class="report-table" style="margin-bottom:20px;">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Current Stock</th>
+                        <th>Reorder Level</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${lowStock.map(product => `
+                        <tr style="color:var(--warning-color);">
+                            <td>${product.name}</td>
+                            <td>${product.stock}</td>
+                            <td>${product.lowStock}</td>
+                            <td>MWK ${(product.price * product.stock).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : ''}
+
+        ${outOfStock.length > 0 ? `
+            <h4 style="margin-bottom:10px; color:var(--danger-color);">Out of Stock Items</h4>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Last Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${outOfStock.map(product => `
+                        <tr style="color:var(--danger-color);">
+                            <td>${product.name}</td>
+                            <td>${product.category}</td>
+                            <td>MWK ${product.price.toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : ''}
+    `;
+}
+
+function generateProductPerformanceReport(reportOrders) {
+    const productSales = {};
+    
+    reportOrders.forEach(order => {
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const productName = item.name || item.productName;
+                if (!productSales[productName]) {
+                    productSales[productName] = { quantity: 0, revenue: 0 };
+                }
+                productSales[productName].quantity += item.quantity || 1;
+                productSales[productName].revenue += item.price * (item.quantity || 1);
+            });
+        }
+    });
+
+    const sortedProducts = Object.entries(productSales)
+        .sort(([,a], [,b]) => b.revenue - a.revenue)
+        .slice(0, 20); // Top 20 products
+
+    return `
+        <h4 style="margin-bottom:10px;">Top Performing Products</h4>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity Sold</th>
+                    <th>Revenue</th>
+                    <th>Avg Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sortedProducts.map(([name, data]) => `
+                    <tr>
+                        <td>${name}</td>
+                        <td>${data.quantity}</td>
+                        <td>MWK ${data.revenue.toLocaleString()}</td>
+                        <td>MWK ${Math.round(data.revenue / data.quantity).toLocaleString()}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
 function exportReport() {
-    showToast('Report exported successfully', 'success');
+    const reportType = $('#reportType').val() || 'daily';
+    exportToPDF(reportType);
+}
+
+function exportToPDF(reportType) {
+    const output = $('#reportOutput');
+    if (!output.length || output.html().trim() === '') {
+        showToast('Generate report first', 'warning');
+        return;
+    }
+
+    // Check if html2pdf library is loaded
+    if (typeof html2pdf === 'undefined') {
+        // Fallback: create a simple text export
+        const reportText = output.text();
+        const blob = new Blob([reportText], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportType}-report-${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showToast('Report exported as text file', 'success');
+    } else {
+        const element = output.clone()[0];
+        const opt = {
+            margin: 10,
+            filename: `${reportType}-report-${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+        
+        html2pdf().set(opt).from(element).save();
+        showToast('Report exported to PDF', 'success');
+    }
+}
+
+function exportToExcel(reportType) {
+    const output = $('#reportOutput');
+    if (!output.length || output.html().trim() === '') {
+        showToast('Generate report first', 'warning');
+        return;
+    }
+
+    // Simple CSV export
+    const tables = output.find('table');
+    let csvContent = '';
+    
+    tables.each(function() {
+        const table = $(this);
+        table.find('tr').each(function() {
+            const row = [];
+            $(this).find('th, td').each(function() {
+                row.push('"' + $(this).text().replace(/"/g, '""') + '"');
+            });
+            csvContent += row.join(',') + '\n';
+        });
+        csvContent += '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${reportType}-report-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    showToast('Report exported to Excel (CSV)', 'success');
 }
 
 // Staff Performance - Shows sales from all staff members
